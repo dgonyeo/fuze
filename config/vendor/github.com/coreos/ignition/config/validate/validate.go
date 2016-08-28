@@ -124,12 +124,16 @@ type field struct {
 // getFields returns a field of all the fields in the struct, including the fields of
 // embedded structs.
 func getFields(vObj reflect.Value) []field {
+	if vObj.Interface() == nil {
+		return nil
+	}
+	objType := reflect.TypeOf(vObj.Interface())
 	ret := []field{}
-	for i := 0; i < vObj.Type().NumField(); i++ {
-		if vObj.Type().Field(i).Anonymous {
+	for i := 0; i < objType.NumField(); i++ {
+		if objType.Field(i).Anonymous {
 			ret = append(ret, getFields(vObj.Field(i))...)
 		} else {
-			ret = append(ret, field{Type: vObj.Type().Field(i), Value: vObj.Field(i)})
+			ret = append(ret, field{Type: objType.Field(i), Value: reflect.ValueOf(vObj.Interface()).Field(i)})
 		}
 	}
 	return ret
