@@ -32,6 +32,7 @@ type Config struct {
 	Update    *Update    `yaml:"update"`
 	Docker    *Docker    `yaml:"docker"`
 	Locksmith *Locksmith `yaml:"locksmith"`
+	Iptables  *Iptables  `yaml:"iptables"`
 }
 
 type Ignition struct {

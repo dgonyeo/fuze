@@ -111,6 +111,18 @@ _Note: all fields are optional unless otherwise marked_
   * **etcd_cafile** (string): the tls CA file to use when communicating with etcd
   * **etcd_certfile** (string): the tls cert file to use when communicating with etcd
   * **etcd_keyfile** (string): the tls key file to use when communicating with etcd
+* **iptables** (object): describes iptables rules for the machine to follow
+  * **v4** (list of objects): a list of tables and their rules
+    * **table** (string, required): the table these rules will go in
+    * **input** (object): the default and rules for the input chain
+      * **default** (string): the default policy of this chain, must be one of ACCEPT or DROP
+      * **rules** (list of strings): the iptables rules
+    * **forward** (object): the default and rules for the forward chain
+      * has the same fields as **input**
+    * **output** (object): the default and rules for the output chain
+      * has the same fields as **input**
+  * **v6**
+    * has the same fields as **v4**
 
 [part-types]: http://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs
 [rfc2397]: https://tools.ietf.org/html/rfc2397

@@ -185,6 +185,33 @@ locksmith:
 
 This example configures the Container Linux instance to be a member of the beta group, configures locksmithd to acquire a lock in etcd before rebooting for an update, and only allows reboots during a 2 hour window starting at 1 AM on Sundays.
 
+## iptables
+
+```yaml
+iptables:
+  v4:
+    - table: "filter"
+      output:
+        default: "ACCEPT"
+        rules:
+          - -A INPUT -i lo -j ACCEPT
+          - -A INPUT -i eth1 -j ACCEPT
+          - -A INPUT -p tcp -m tcp --dport 222 -j ACCEPT
+          - -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+  v6:
+    - table: "filter"
+      forward:
+        default: "ACCEPT"
+```
+
+This example configures all outbound IPv4 traffic to be accepted if it's going
+out on interfaces lo or eth1, if it's going to port 222, or if it's an already
+established connection, otherwise the traffic is dropped.
+
+Additionally all forwarding IPv6 traffic will be accepted.
+
+All other traffic will be dropped (including all incoming connections).
+
 [spec]: configuration.md
 [dropins]: https://coreos.com/os/docs/latest/using-systemd-drop-in-units.html
 [networkd]: https://coreos.com/os/docs/latest/network-config-with-networkd.html
