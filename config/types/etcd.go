@@ -17,6 +17,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	ignTypes "github.com/coreos/ignition/config/v2_0/types"
@@ -32,7 +33,9 @@ var (
 )
 
 // Options can be the options for any Etcd version
-type Options interface{}
+type Options interface {
+	Validate() report.Report
+}
 
 type etcdCommon Etcd
 
@@ -147,6 +150,47 @@ func etcdContents(etcd Etcd, platform string) (string, error) {
 	return unit.String(), nil
 }
 
+var validPrefixes = []string{"http://", "https://", "unix://", "unixs://"}
+
+func checkForPrefix(s string) bool {
+	if s == "" {
+		return true
+	}
+	urlStrs := strings.Split(s, ",")
+	for _, urlStr := range urlStrs {
+		hasPrefix := false
+		for _, p := range validPrefixes {
+			hasPrefix = hasPrefix || strings.HasPrefix(urlStr, p)
+		}
+		if !hasPrefix {
+			return false
+		}
+	}
+	return true
+}
+
+func validatePrefixes(m map[string]string) report.Report {
+	r := report.Report{}
+	for name, val := range m {
+		if !checkForPrefix(val) {
+			r.Add(report.Entry{
+				Message: fmt.Sprintf("value for %s doesn't start with one of: %v", name, validPrefixes),
+				Kind:    report.EntryWarning,
+			})
+		}
+	}
+	return r
+}
+
+func (e Etcd3_0) Validate() report.Report {
+	return validatePrefixes(map[string]string{
+		"listen_peer_urls":            e.ListenPeerUrls,
+		"listen_client_urls":          e.ListenClientUrls,
+		"initial_advertise_peer_urls": e.InitialAdvertisePeerUrls,
+		"advertise_client_urls":       e.AdvertiseClientUrls,
+	})
+}
+
 type Etcd3_0 struct {
 	Name                     string `yaml:"name"                        cli:"name"`
 	DataDir                  string `yaml:"data_dir"                    cli:"data-dir"`
@@ -192,6 +236,15 @@ type Etcd3_0 struct {
 	Debug                    bool   `yaml:"debug"                       cli:"debug"`
 	LogPackageLevels         string `yaml:"log_package_levels"          cli:"log-package-levels"`
 	ForceNewCluster          bool   `yaml:"force_new_cluster"           cli:"force-new-cluster"`
+}
+
+func (e Etcd3_1) Validate() report.Report {
+	return validatePrefixes(map[string]string{
+		"listen_peer_urls":            e.ListenPeerUrls,
+		"listen_client_urls":          e.ListenClientUrls,
+		"initial_advertise_peer_urls": e.InitialAdvertisePeerUrls,
+		"advertise_client_urls":       e.AdvertiseClientUrls,
+	})
 }
 
 type Etcd3_1 struct {
@@ -241,6 +294,15 @@ type Etcd3_1 struct {
 	ForceNewCluster          bool   `yaml:"force_new_cluster"           cli:"force-new-cluster"`
 	Metrics                  string `yaml:"metrics"                     cli:"metrics"`
 	LogOutput                string `yaml:"log_output"                  cli:"log-output"`
+}
+
+func (e Etcd2) Validate() report.Report {
+	return validatePrefixes(map[string]string{
+		"listen_peer_urls":            e.ListenPeerURLs,
+		"listen_client_urls":          e.ListenClientURLs,
+		"initial_advertise_peer_urls": e.InitialAdvertisePeerURLs,
+		"advertise_client_urls":       e.AdvertiseClientURLs,
+	})
 }
 
 type Etcd2 struct {

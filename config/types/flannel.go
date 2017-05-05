@@ -185,6 +185,10 @@ func flannelContents(flannel Flannel, platform string) (string, error) {
 	return unit.String(), nil
 }
 
+func (f Flannel0_7) Validate() report.Report {
+	return report.Report{}
+}
+
 // Flannel0_7 represents flannel options for version 0.7.x. Don't embed Flannel0_6 because
 // the yaml parser doesn't handle embedded structs
 type Flannel0_7 struct {
@@ -202,6 +206,10 @@ type Flannel0_7 struct {
 	KubeSubnetMgr bool   `yaml:"kube_subnet_mgr" cli:"kube-subnet-mgr"`
 }
 
+func (f Flannel0_6) Validate() report.Report {
+	return report.Report{}
+}
+
 type Flannel0_6 struct {
 	EtcdUsername  string `yaml:"etcd_username"  cli:"etcd-username"`
 	EtcdPassword  string `yaml:"etcd_password"  cli:"etcd-password"`
@@ -214,6 +222,10 @@ type Flannel0_6 struct {
 	SubnetFile    string `yaml:"subnet_file"    cli:"subnet-file"`
 	Iface         string `yaml:"interface"      cli:"iface"`
 	PublicIP      string `yaml:"public_ip"      cli:"public-ip"`
+}
+
+func (f Flannel0_5) Validate() report.Report {
+	return report.Report{}
 }
 
 type Flannel0_5 struct {
